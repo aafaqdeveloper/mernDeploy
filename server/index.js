@@ -1,29 +1,56 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors')
-const RegisterModel = require('./models/Register')
-const abc = " ldafsjkl"
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser")
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+
+const userRoute = require("./routes/userRoute")
+const productRoute = require("./routes/productRoute")
+const errorHandler = require("./middleWare/errorMiddleware")
+const path = require("path")
 
 const app = express()
+
+// Middlewares
+app.use(express.json())
+app.use(cookieParser())
+app.use(express.urlencoded({ extended: false }))
+//app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
+
 app.use(cors(
     {
-        origin: ["https://deploy-mern-frontend.vercel.app"],
+        origin: ["http://fury.aafaqhassan.com"],
         methods: ["POST", "GET"],
         credentials: true
     }
 ));
-app.use(express.json())
 
-mongoose.connect('mongodb+srv://yousaf:test123@cluster0.g4i5dey.mongodb.net/test?retryWrites=true&w=majority');
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+
+// Routes Middleware
+app.use("/api/users", userRoute)
+app.use("/api/products", productRoute)
 
 
+// Routes
 app.get("/", (req, res) => {
-    res.json("Hello");
+    res.send("Welcome to home page...")
 })
 
+const PORT = process.env.PORT || 5000
+
+// Error Middleware
+app.use(errorHandler)
 
 
+// Connect to DB and start server
 
-app.listen(3001, () => {
-    console.log("Server is Running")
-})
+mongoose
+    .connect('mongodb+srv://aafaqisc:admin@dipeshcluster.lupetvq.mongodb.net/ndure?retryWrites=true&w=majority')
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`)
+        })
+    })
+    .catch((err) => console.log(err))
